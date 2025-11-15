@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Passcode is required</title>
+    <link href="https://fonts.googleapis.com/css2?family=Lora:ital,wght@1,400;1,700&display=swap" rel="stylesheet">
+    <style>
+        @keyframes cursorFlicker {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0; }
+        }
+
+        @keyframes charFadeIn {
+            from { opacity: 0; transform: scale(0.9); }
+            to { opacity: 1; transform: scale(1); }
+        }
+
+        body {
+            margin: 0;
+            padding: 0;
+            background-color: #ffffff; 
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            transition: opacity 2s ease-in-out;
+            opacity: 1;
+        }
+        
+        #display-container {
+            display: flex;
+            align-items: center; 
+            flex-wrap: nowrap;
+            overflow: hidden;
+            font-family: 'Lora', serif;
+            font-style: italic;
+            font-size: 1.8rem;
+            color: #686868;
+        }
+        
+        #display-output span {
+            display: inline-block;
+            opacity: 0;
+            animation: charFadeIn 0.5s ease-in-out forwards;
+            padding: 0; 
+            transform-origin: center;
+        }
+
+        #custom-cursor {
+            width: 1px;
+            height: 1.8rem;
+            background-color: #686868;
+            margin-left: 1px;
+            opacity: 1;
+            transition: background-color 0.1s;
+            animation: cursorFlicker 1.5s infinite ease-in-out;
+        }
+
+        #hidden-input {
+            position: fixed;
+            top: -100px;
+            left: -100px;
+            opacity: 0;
+            pointer-events: none;
+        }
+
+    </style>
+</head>
+<body>
+    <div id="display-container">
+        <div id="display-output"></div>
+        <div id="custom-cursor"></div>
+    </div>
+    
+    <input 
+        type="text" 
+        id="hidden-input" 
+        autofocus 
+        spellcheck="false" 
+        autocomplete="off"
+    >
+
+    <script>
+        const REDIRECT_URL = 'https://fadjm6vrbvccb4e8nhaq5fahkrm7aeyf.tumblr.com/';
+        const FADE_DURATION_MS = 2000; 
+        
+        const ACCEPTED_PASSWORDS = [
+            'yes', 
+            'letsdance', 
+            'namedtringuyen',
+            'sirius a',
+            'sirius b'
+        ];
+        
+        const hiddenInput = document.getElementById('hidden-input');
+        const displayContainer = document.getElementById('display-container');
+        const displayOutput = document.getElementById('display-output');
+        const customCursor = document.getElementById('custom-cursor');
+        let currentText = '';
+
+        function updateDisplay() {
+            const newText = hiddenInput.value;
+            
+            if (newText.length > currentText.length) {
+                const char = newText[newText.length - 1];
+                const span = document.createElement('span');
+                span.textContent = char === ' ' ? '\u00A0' : char;
+                displayOutput.appendChild(span);
+            } else if (newText.length < currentText.length) {
+                if (displayOutput.lastElementChild) {
+                    displayOutput.removeChild(displayOutput.lastElementChild);
+                }
+            }
+            
+            currentText = newText;
+        }
+        
+        function checkInput() {
+            updateDisplay();
+            
+            const enteredCode = currentText.trim().toLowerCase();
+            
+            if (ACCEPTED_PASSWORDS.includes(enteredCode)) {
+                console.log('Access Granted. Starting 2s fade-out and redirect...');
+                
+                hiddenInput.disabled = true; 
+                
+                customCursor.style.animation = 'none';
+                customCursor.style.opacity = 0; 
+                
+                document.body.style.opacity = '0';
+                
+                setTimeout(() => {
+                    window.location.href = REDIRECT_URL;
+                }, FADE_DURATION_MS); 
+            }
+        }
+
+        function focusInput() {
+            if (!hiddenInput.disabled) {
+                hiddenInput.focus();
+            }
+        }
+
+        hiddenInput.addEventListener('input', checkInput);
+
+        window.onload = focusInput;
+        document.body.addEventListener('click', focusInput);
+    </script>
+</body>
+</html>
